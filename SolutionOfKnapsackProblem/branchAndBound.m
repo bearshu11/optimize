@@ -11,14 +11,16 @@ function [iniMax, iniResults, partValues] = branchAndBound(c,a,b,iniMax,iniResul
 % iniMax: Provisional value
 % iniResult: Provisional solution
 % partValues: set of partial problems
-%             e.g. P(J0,J1), J0 = {1,2}, J1 = {4}, F = {3,5} => partValues == [0,0,-1,1,-1]
+%             e.g. P(J0,J1), J0 = {1,2}, J1 = {3}, F = {4,5} => partValues == [0,0,1,-1,-1]
 %
 % Conditions
 % size(a,2) == size(c,2) == size(iniResults)  partValues == (size(a,2) || [-1])
 
+% ベクトルの長さは全て同じ
 arraySize = size(c,2);
 
 if partValues(1,1) == -1
+    % P(J0,J1)でJ0={},J1={}の時
     for i=1:arraySize
         partValues(1,i) =  -1;
     end
@@ -31,6 +33,7 @@ else
     tempB = b;
     tempResults = [];
     tempMax = 0;
+    % 連続緩和問題を解く処理
     for i=1:arraySize
         if partValues(1,i) == 0
             tempResults(1,i) = 0;
@@ -77,7 +80,7 @@ else
         endif
     end
 
-    % 実行可能解をもつか
+    % 実行可能解をもつかの判定  持たなければ終端
     if conditionToContinue == true
         % 0-1条件の確認
         condition01 = true;
@@ -92,8 +95,10 @@ else
             if tempMax >= iniMax
                 iniMax = tempMax;
                 iniResults = tempResults;
+                % 終端
             endif
         else
+            % 暫定値よりも目的関数の値が大きいかどうか判定  大きくなければ終端
             if tempMax >= iniMax
                 nextKey = -1;
                 for i=1:arraySize
@@ -110,6 +115,7 @@ else
                 else
                     iniMax = tempMax;
                     iniResults = tempResults;
+                    % 木構造を最下層まで探索したので終端
                 endif
             endif
         endif
