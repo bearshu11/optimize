@@ -1,12 +1,12 @@
 function [iniMax, iniResults, partValues] = branchAndBound(c,a,b,iniMax,iniResults,partValues)
 % [iniMax, iniResults, partValues] = branchAndBound(c,a,b,iniMax,iniResults,partValues)
-% This program finds a solution of Knapsack problem
+% This program finds a solution of Knapsack problem by branch and bound method.
 %    Objective function  max( ```math \sum_{i=1}^n c_i x_i ``` )
 %    Constraint          ```math \sum_{i=1}^n a_i x_i \leq b ```
 %                           x_i = 0,1 (i = 1...n)
 %                           c_1/a_1 >= c_2/a_2 >= ... >= c_n/a_n
-% c: Coefficient vector of the objective function
-% a: Coefficient vector of the constraint
+% c: Coefficient vector of the objective function(sorted)
+% a: Coefficient vector of the constraint(sorted)
 % b: Value of the constraint
 % iniMax: Provisional value
 % iniResult: Provisional solution
