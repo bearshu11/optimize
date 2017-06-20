@@ -1,4 +1,5 @@
 function [iniResults, iniMax] = greedy(c,a,b)
+	% 貪欲法
 	% [c,a] = sortForKnapsack(c,a,b);
 	iniResults = [];
 	iniMax = 0;
