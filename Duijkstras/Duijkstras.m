@@ -8,7 +8,7 @@ function [s, d, p]= Duijkstras(s, d, p, graph, startKey)
 % 調べる場所を1に変更する
 s(1,startKey) = 1;
 
-% _s_:探索前の接点の集合が空集合であるかどうかの判定
+% _s_(探索前の接点の集合)が空集合であるかどうかの判定
 condition = false;
 for i=1:size(s,2)
 	if s(1,i) == 0
