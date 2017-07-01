@@ -2,7 +2,7 @@ import numpy as np
 import copy
 
 class TravellingSalesmanProblem:
-    # matrix:np.array
+    # @param np.array matrix, {(int,int):int} decidedPathes, int[] rowIndexes int[] columnIndexes
     def __init__(self,matrix,decidedPathes={},rowIndexes=[],columnIndexes=[]):
         self.matrix = matrix
         self.decidedPathes = decidedPathes
@@ -14,6 +14,8 @@ class TravellingSalesmanProblem:
                 self.rowIndexes.append(i)
                 self.columnIndexes.append(i)
 
+    # 分岐先の二つの部分問題を生成する
+    # @return problem0, problem1
     def branch(self):
         # 分岐先として経路が短いものから選択する
         indexesOfMin = np.where(self.matrix == self.matrix.min())
@@ -43,7 +45,7 @@ class TravellingSalesmanProblem:
         columnIndexes1 = copy.deepcopy(self.columnIndexes)
         decidedPathes1 = copy.deepcopy(self.decidedPathes)
 
-        # 選択した経路を通るとしたとき(xij=1)の分岐処理(i列とj行を取り除く処理)
+        # 選択した経路を通るとしたとき(xij=1)の分岐処理(i行とj列を取り除く処理等)
         del rowIndexes1[targetIndex[0]]
         del columnIndexes1[targetIndex[1]]
         matrix1 = self.removeRowColumn(targetIndex,matrix1)
@@ -55,31 +57,38 @@ class TravellingSalesmanProblem:
 
         return problem0, problem1
 
+    # xij=1としたときの行列からi行とj列を取り除く処理
     def removeRowColumn(self,index,matrix):
         removedMatrix = np.delete(np.delete(matrix,index[0],0),index[1],1)
         return removedMatrix
 
+    # 配列のインデックス(0,1,...)から都市のインデックスに変更
     def convertToCityIndex(self,target,rowIndexes,columnIndexes):
         r = rowIndexes[target[0]]
         c = columnIndexes[target[1]]
         return (r,c)
 
+    # 都市のインデックスから配列のインデックスに変更
     def convertToNormalIndex(self,target,rowIndexes,columnIndexes):
         r = rowIndexes.index(target[0])
         c = columnIndexes.index(target[1])
         return (r,c)
 
+    # TravellingSalesmanProblemを解く
+    # @return bool terminal, {(int,int):int} result, int lowerBound
     def solve(self):
         matrix = copy.deepcopy(self.matrix)
         rowNum, colNum = matrix.shape
 
+        #
         if rowNum > 1:
             # 各行の最小値を求めて各行から引く
             Sr = 0
             for i in range(0,rowNum):
                 row = matrix[i,:]
                 Sr += row.min()
-                row = row - row.min()
+                if row.min() != np.inf:
+                    row = row - row.min()
                 matrix[i,:] = row
 
             # 各列の最小値を求めて各列から引く
@@ -87,7 +96,8 @@ class TravellingSalesmanProblem:
             for i in range(0,colNum):
                 column = matrix[:,i]
                 Sc += column.min()
-                column = column - column.min()
+                if column.min() != np.inf:
+                    column = column - column.min()
                 matrix[:,i] = column
 
             # 下界値
@@ -95,17 +105,22 @@ class TravellingSalesmanProblem:
             for value in self.decidedPathes.values():
                 lowerBound += value
 
-            # TODO:一巡閉路なら終端になるようにする
-            terminal = False
+            # TODO:一巡閉路なら終端になるようにする処理
             # terminal = True if Sc == 0 else False >>議論が間違っているので不可
+            terminal = False
 
-            # TODO:返却する解を決める
+            # TODO:返却する解の変更
             result = self.decidedPathes if terminal == True else None
         else:
+            # 下界値
             lowerBound = matrix[0][0]
             for value in self.decidedPathes.values():
                 lowerBound += value
+
+            # これ以上分枝できないので終端
             terminal = True
+
             result = self.decidedPathes
             result[(self.rowIndexes[0], self.columnIndexes[0])] = matrix[0][0]
+
         return terminal, result, lowerBound
