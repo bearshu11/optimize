@@ -10,7 +10,7 @@ matrix = np.array([[np.inf,21,7,13,15],
 
 problem = TravellingSalesmanProblem(matrix)
 result = {}
-subjectValue = 60
+subjectValue = 50
 method = BranchAndBound(problem,result,subjectValue)
 method.solve()
 print(method.result)

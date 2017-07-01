@@ -10,26 +10,13 @@ class BranchAndBound:
     def solve(self):
         if len(self.process) == 0:
             pass
-        elif len(self.process) == 1:
-            prob = self.process.pop()
-            terminal, tempResult, tempSubjectValue = prob.solve()
-            # 終端であるかどうか
-            if terminal == True:
-                if tempSubjectValue < self.subjectValue:
-                    self.subjectValeue = tempSubjectValue
-                    self.result = tempResult
-            else:
-                if tempSubjectValue < self.subjectValue:
-                    self.branch(prob)
-            self.solve()
         else:
             prob = self.process.pop()
-            print(prob.matrix)
             terminal, tempResult, tempSubjectValue = prob.solve()
             # 終端であるかどうか
             if terminal == True:
                 if tempSubjectValue < self.subjectValue:
-                    self.subjectValeue = tempSubjectValue
+                    self.subjectValue = tempSubjectValue
                     self.result = tempResult
             else:
                 if tempSubjectValue < self.subjectValue:

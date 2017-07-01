@@ -1,5 +1,6 @@
 import numpy as np
 import copy
+
 class TravellingSalesmanProblem:
     # matrix:np.array
     def __init__(self,matrix,decidedPathes={},rowIndexes=[],columnIndexes=[]):
@@ -14,32 +15,41 @@ class TravellingSalesmanProblem:
                 self.columnIndexes.append(i)
 
     def branch(self):
-        # 0から始まるインデックスの状態
+        # 分岐先として経路が短いものから選択する
         indexesOfMin = np.where(self.matrix == self.matrix.min())
+        # 0から始まる(単なる配列として考えるときの)インデックスでの値
         targetIndex = (indexesOfMin[0][0],indexesOfMin[1][0])
-        # 都市1~nに対応したインデックスの状態
+        # 都市1~nに対応したインデックスでの値
         convertdTargetIndex = self.convertToCityIndex(targetIndex,
                                                       self.rowIndexes,
                                                       self.columnIndexes)
-        print(convertdTargetIndex)
-        # x=0で分岐した先のTravellingSalesmanProblemのインスタンス作成
+
+        # このTravellingSalesmanProblemインスタンスのメンバーをコピー
         matrix0 = copy.deepcopy(self.matrix)
-        matrix0[targetIndex[0],targetIndex[1]] = np.inf
         rowIndexes0 = copy.deepcopy(self.rowIndexes)
         columnIndexes0 = copy.deepcopy(self.columnIndexes)
         decidedPathes0 = copy.deepcopy(self.decidedPathes)
+
+        # 選択した経路を通らないとしたとき(xij=0)の分岐処理(dij = inf)
+        matrix0[targetIndex[0],targetIndex[1]] = np.inf
+
+        # x=0で分岐した先のTravellingSalesmanProblemのインスタンス作成
         problem0 = TravellingSalesmanProblem(matrix0,decidedPathes0,
                                              rowIndexes0,columnIndexes0)
 
-        # x=1で分岐した先のTravellingSalesmanProblemのインスタンス作成
+        # このTravellingSalesmanProblemインスタンスのメンバーをコピー
         matrix1 = copy.deepcopy(self.matrix)
         rowIndexes1 = copy.deepcopy(self.rowIndexes)
         columnIndexes1 = copy.deepcopy(self.columnIndexes)
+        decidedPathes1 = copy.deepcopy(self.decidedPathes)
+
+        # 選択した経路を通るとしたとき(xij=1)の分岐処理(i列とj行を取り除く処理)
         del rowIndexes1[targetIndex[0]]
         del columnIndexes1[targetIndex[1]]
         matrix1 = self.removeRowColumn(targetIndex,matrix1)
-        decidedPathes1 = copy.deepcopy(self.decidedPathes)
         decidedPathes1[convertdTargetIndex] = self.matrix[targetIndex[0],targetIndex[1]]
+
+        # x=1で分岐した先のTravellingSalesmanProblemのインスタンス作成
         problem1 = TravellingSalesmanProblem(matrix1,decidedPathes1,
                                              rowIndexes1,columnIndexes1)
 
@@ -85,9 +95,10 @@ class TravellingSalesmanProblem:
             for value in self.decidedPathes.values():
                 lowerBound += value
 
-            # Scが０(一巡閉路)なら終端
-            # TODO:議論が間違っているので正しく変更
-            terminal = True if Sc == 0 else False
+            # TODO:一巡閉路なら終端になるようにする
+            terminal = False
+            # terminal = True if Sc == 0 else False >>議論が間違っているので不可
+
             # TODO:返却する解を決める
             result = self.decidedPathes if terminal == True else None
         else:
@@ -96,4 +107,5 @@ class TravellingSalesmanProblem:
                 lowerBound += value
             terminal = True
             result = self.decidedPathes
+            result[(self.rowIndexes[0], self.columnIndexes[0])] = matrix[0][0]
         return terminal, result, lowerBound
