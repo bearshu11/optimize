@@ -27,10 +27,8 @@ class TravellingSalesmanProblem:
                                                       self.columnIndexes)
 
         # このTravellingSalesmanProblemインスタンスのメンバーをコピー
-        matrix0 = copy.deepcopy(self.matrix)
-        rowIndexes0 = copy.deepcopy(self.rowIndexes)
-        columnIndexes0 = copy.deepcopy(self.columnIndexes)
-        decidedPathes0 = copy.deepcopy(self.decidedPathes)
+        matrix0, rowIndexes0, columnIndexes0, decidedPathes0 = self.copySelfMember()
+        matrix1, rowIndexes1, columnIndexes1, decidedPathes1 = self.copySelfMember()
 
         # 選択した経路を通らないとしたとき(xij=0)の分岐処理(dij = inf)
         matrix0[targetIndex[0],targetIndex[1]] = np.inf
@@ -38,12 +36,6 @@ class TravellingSalesmanProblem:
         # x=0で分岐した先のTravellingSalesmanProblemのインスタンス作成
         problem0 = TravellingSalesmanProblem(matrix0,decidedPathes0,
                                              rowIndexes0,columnIndexes0)
-
-        # このTravellingSalesmanProblemインスタンスのメンバーをコピー
-        matrix1 = copy.deepcopy(self.matrix)
-        rowIndexes1 = copy.deepcopy(self.rowIndexes)
-        columnIndexes1 = copy.deepcopy(self.columnIndexes)
-        decidedPathes1 = copy.deepcopy(self.decidedPathes)
 
         # 選択した経路を通るとしたとき(xij=1)の分岐処理(i行とj列を取り除く処理等)
         del rowIndexes1[targetIndex[0]]
@@ -56,6 +48,13 @@ class TravellingSalesmanProblem:
                                              rowIndexes1,columnIndexes1)
 
         return problem0, problem1
+
+    def copySelfMember(self):
+        matrix = copy.deepcopy(self.matrix)
+        rowIndexes = copy.deepcopy(self.rowIndexes)
+        columnIndexes = copy.deepcopy(self.columnIndexes)
+        decidedPathes = copy.deepcopy(self.decidedPathes)
+        return matrix, rowIndexes, columnIndexes, decidedPathes
 
     # xij=1としたときの行列からi行とj列を取り除く処理
     def removeRowColumn(self,index,matrix):
