@@ -1,4 +1,4 @@
-
+# 分枝限定法
 class BranchAndBound:
     def __init__(self,problem,result,subjectValue):
         # process 処理を保存するスタック

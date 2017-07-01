@@ -1,6 +1,7 @@
 import numpy as np
 import copy
 
+# 巡回セールスマン問題:分枝限定法対応
 class TravellingSalesmanProblem:
     # @param np.array matrix, {(int,int):int} decidedPathes, int[] rowIndexes int[] columnIndexes
     def __init__(self,matrix,decidedPathes={},rowIndexes=[],columnIndexes=[]):
@@ -79,7 +80,6 @@ class TravellingSalesmanProblem:
         matrix = copy.deepcopy(self.matrix)
         rowNum, colNum = matrix.shape
 
-        #
         if rowNum > 1:
             # 各行の最小値を求めて各行から引く
             Sr = 0
@@ -99,19 +99,21 @@ class TravellingSalesmanProblem:
                     column = column - column.min()
                 matrix[:,i] = column
 
-            # 下界値
+            # 下界値を求める
             lowerBound = Sr + Sc
             for value in self.decidedPathes.values():
                 lowerBound += value
 
+            # 将来的に変更すべきTODO
             # TODO:一巡閉路なら終端になるようにする処理
-            # terminal = True if Sc == 0 else False >>議論が間違っているので不可
+            # terminal = True if Sc == 0 else False >>不可
             terminal = False
 
+            # 将来的に変更すべきTODO
             # TODO:返却する解の変更
             result = self.decidedPathes if terminal == True else None
         else:
-            # 下界値
+            # 下界値を求める
             lowerBound = matrix[0][0]
             for value in self.decidedPathes.values():
                 lowerBound += value

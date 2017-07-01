@@ -7,15 +7,28 @@ matrix = np.array([[np.inf,21,7,13,15],
                    [15,24,np.inf,13,5],
                    [6,17,9,np.inf,22],
                    [28,6,11,5,np.inf]])
-# matrix = np.array([[np.inf,21,5,15,9],
-#                    [17,np.inf,12,6,24],
-#                    [13,5,np.inf,20,8],
-#                    [9,12,7,np.inf,23],
-#                    [26,7,13,8,np.inf]])
 
 problem = TravellingSalesmanProblem(matrix)
+
+# 暫定値と暫定解の設定
 result = {}
 subjectValue = np.inf
+
 method = BranchAndBound(problem,result,subjectValue)
+
+# 分枝限定法で巡回セールスマン問題を解く
 result, subjectValue = method.solve()
-print(result, subjectValue)
+
+cityNum = list(result.keys())[0][0]
+answer = ""
+answer += str(list(result.keys())[0][0])
+i = 0
+while i<len(result):
+    for key in result.keys():
+        if key[0] == cityNum:
+            answer += " -> "
+            answer += str(key[1])
+            cityNum = key[1]
+            i += 1
+print("Route: " + answer)
+print("Distance: " + str(subjectValue))
