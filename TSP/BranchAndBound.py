@@ -21,6 +21,7 @@ class BranchAndBound:
             else:
                 if tempSubjectValue < self.subjectValue:
                     self.branch(prob)
+            self.solve()
         else:
             prob = self.process.pop()
             print(prob.matrix)
