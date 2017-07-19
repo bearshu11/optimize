@@ -16,7 +16,7 @@ class NonLinearMethod(metaclass=ABCMeta):
         self.errorRanges = []
 
         # 収束かどうかを判定するための値
-        self.errorRangeLimit = 0.001
+        self.errorRangeLimit = 0.00001
 
     def setErrorRangeLimit(self, val):
         self.errorRangeLimit = val
@@ -67,21 +67,22 @@ class GoldenSectionMethod(NonLinearMethod):
         self.goldenRatio = (math.sqrt(5) - 1) / 2.0
 
     def solve(self):
-        errorRange = self.upLimit - self.lowLimit
-        # 現在の解の範囲を保存
-        self.errorRanges.append(errorRange)
+        while True:
+            errorRange = self.upLimit - self.lowLimit
+            # 現在の解の範囲を保存
+            self.errorRanges.append(errorRange)
 
-        # 収束していないときの処理
-        if errorRange > self.errorRangeLimit:
-            x1, x2 = self.getNextX()
-            f1 = self.function(x1)
-            f2 = self.function(x2)
-            if f2 > f1:
-                self.upLimit = x2
+            # 収束していないときの処理
+            if errorRange > self.errorRangeLimit:
+                x1, x2 = self.getNextX()
+                f1 = self.function(x1)
+                f2 = self.function(x2)
+                if f2 > f1:
+                    self.upLimit = x2
+                else:
+                    self.lowLimit = x1
             else:
-                self.lowLimit = x1
-
-            self.solve()
+                break
 
     def getNextX(self):
         distance = self.upLimit - self.lowLimit
@@ -107,21 +108,22 @@ class BisectionMethod(NonLinearMethod):
         self.upLimit = upLimit
 
     def solve(self):
-        errorRange = self.upLimit - self.lowLimit
+        while True:
+            errorRange = self.upLimit - self.lowLimit
 
-        # 現在の解の範囲を保存
-        self.errorRanges.append(errorRange)
+            # 現在の解の範囲を保存
+            self.errorRanges.append(errorRange)
 
-        # 収束していないときの処理
-        if errorRange > self.errorRangeLimit:
-            x = self.getNextX()
-            fd = differentiate(self.function, x)
-            if fd > 0:
-                self.upLimit = x
+            # 収束していないときの処理
+            if errorRange > self.errorRangeLimit:
+                x = self.getNextX()
+                fd = differentiate(self.function, x)
+                if fd > 0:
+                    self.upLimit = x
+                else:
+                    self.lowLimit = x
             else:
-                self.lowLimit = x
-
-            self.solve()
+                break
 
     def getNextX(self):
         nextX = (self.upLimit + self.lowLimit) / 2.0
@@ -142,26 +144,152 @@ class NewtonMethod(NonLinearMethod):
         self.nextX = self.getNextX()
 
     def solve(self):
-        errorRange = math.fabs(self.nextX - self.x)
-        # 現在の評価点の値と次の評価点の値の差を保存
-        self.errorRanges.append(errorRange)
+        while True:
+            errorRange = math.fabs(self.nextX - self.x)
+            # 現在の評価点の値と次の評価点の値の差を保存
+            self.errorRanges.append(errorRange)
 
-        # 次の評価点がinfまたはnanのときエラー表示をする
-        if self.nextX == (float("inf") or float("-inf")):
-            print("Error Inf : x does not converge")
-            return
-        elif math.isnan(self.nextX):
-            print("Error Nan : x does not converge")
-            return
+            # 次の評価点がinfまたはnanのときエラー表示をする
+            if self.nextX == (float("inf") or float("-inf")):
+                print("Error Inf : x does not converge")
+                return
+            elif math.isnan(self.nextX):
+                print("Error Nan : x does not converge")
+                return
 
-        # 収束していないときの処理
-        if errorRange > self.errorRangeLimit:
-            self.x = self.nextX
-            self.nextX = self.getNextX()
-            self.solve()
+            # 収束していないときの処理
+            if errorRange > self.errorRangeLimit:
+                self.x = self.nextX
+                self.nextX = self.getNextX()
+            else:
+                break
 
     def getNextX(self):
         nextX = self.x - differentiate(self.function, self.x) / differentiate2(self.function, self.x)
+        return nextX
+
+    def getAnswer(self):
+        optX = self.nextX
+        optA = self.function(optX)
+        return optX, optA
+
+# 再急降下法
+# funstion 元の関数
+# dif_func functionを1階微分したもの
+# x0 初期値
+class SteepestDecentMethod(NonLinearMethod):
+    def __init__(self, function, dif_func, x0):
+        super().__init__(function)
+        self.dif_func = dif_func
+        self.x = x0
+        self.dx = 0.001
+
+    def solve(self):
+        while True:
+            # 探索方向の決定
+            self.s = -self.dif_func(self.x)
+            # ラインサーチ
+            self.nextX = self.getNextX()
+
+            errorRange = math.fabs(np.linalg.norm(self.nextX - self.x))
+            self.errorRanges.append(errorRange)
+
+            # 収束したかどうかの判定
+            if errorRange > self.errorRangeLimit:
+                self.x = self.nextX
+            else:
+                break
+
+    def getNextX(self):
+        x1 = self.x + self.dx * self.s
+        x2 = self.x + 2.0 * self.dx * self.s
+        p = (self.function(x2) - 2.0 * self.function(x1) + self.function(self.x)) / (2 * self.dx ** 2)
+        q = (-self.function(x2) + 4.0 * self.function(x1) - 3 * self.function(self.x)) / (2 * self.dx)
+        alpha = -q / (2.0 * p)
+        nextX = self.x + alpha * self.s
+        return nextX
+
+    def getAnswer(self):
+        optX = self.nextX
+        optA = self.function(optX)
+        return optX, optA
+
+# 共役勾配法
+# funstion 元の関数
+# dif_func functionを1階微分したもの
+# x0 初期値
+class FletcherReeves(NonLinearMethod):
+    def __init__(self, function, dif_func, x0):
+        super().__init__(function)
+        self.dif_func = dif_func
+        self.x = x0
+        self.s = -self.dif_func(self.x)
+        self.dx = 0.001
+
+
+    def solve(self):
+        while True:
+            self.nextX = self.getNextX()
+            errorRange = math.fabs(np.linalg.norm(self.nextX - self.x))
+            self.errorRanges.append(errorRange)
+
+            # 収束したかどうかの判定
+            if errorRange > self.errorRangeLimit:
+                self.setNextS()
+                self.x = self.nextX
+            else:
+                break
+
+    def getNextX(self):
+        # ラインサーチ（2次近似法）を用いる
+        x1 = self.x + self.dx * self.s
+        x2 = self.x + 2.0 * self.dx * self.s
+        p = (self.function(x2) - 2.0 * self.function(x1) + self.function(self.x)) / (2 * self.dx ** 2)
+        q = (-self.function(x2) + 4.0 * self.function(x1) - 3 * self.function(self.x)) / (2 * self.dx)
+        alpha = -q / (2.0 * p)
+        nextX = self.x + alpha * self.s
+        return nextX
+
+    # 次のsを定める
+    def setNextS(self):
+        self.s = -self.dif_func(self.nextX) + self.s * np.dot(self.dif_func(self.nextX),self.dif_func(self.nextX)) / np.dot(self.dif_func(self.x),self.dif_func(self.x))
+
+    def getAnswer(self):
+        optX = self.nextX
+        optA = self.function(optX)
+        return optX, optA
+
+# 準ニュートン法
+# funstion 元の関数
+# dif_func functionを1階微分したもの
+# x0 初期値
+class BFGS(NonLinearMethod):
+    def __init__(self, function, dif_func, x0):
+        super().__init__(function)
+        self.dif_func = dif_func
+        self.x = x0
+        # ヘッセ行列
+        self.H = np.matrix(np.identity(self.x.size))
+
+    def solve(self):
+        while True:
+            s = np.array(-np.linalg.inv(self.H).dot(self.dif_func(self.x)))[0]
+            self.nextX = self.getNextX(s)
+            errorRange = math.fabs(np.linalg.norm(self.nextX - self.x))
+            self.errorRanges.append(errorRange)
+
+            # 収束したかどうかの判定
+            if errorRange > self.errorRangeLimit:
+                # ヘッセ行列の近似
+                y = self.dif_func(self.nextX) - self.dif_func(self.x)
+                self.H = self.H - np.dot(np.dot(np.array(np.dot(self.H, s))[0][:,np.newaxis],np.matrix(s)),self.H.T) / np.dot(np.array(np.dot(s,self.H))[0], s) + np.dot(y[:,np.newaxis],np.matrix(y)) / np.dot(s, y[:,np.newaxis])
+
+                self.x = self.nextX
+            else:
+                break
+
+    def getNextX(self, s):
+        nextX = self.x + s
         return nextX
 
     def getAnswer(self):
