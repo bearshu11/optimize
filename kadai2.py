@@ -56,13 +56,13 @@ print("****ニュートン法****")
 # 問題１をニュートン法で解く
 problem = NewtonMethod(func1, 1.6)
 problem.solve()
-# problem.printErrorRangeGraph("NewtonMethod1.png")
+problem.printErrorRangeGraph("NewtonMethod1.png")
 x, ans = problem.getAnswer()
 print("問題１：" + "   最適解：" + str(x) + "   " + "最適値：" + str(ans))
 
 # 問題２をニュートン法で解く
 problem = NewtonMethod(func2, 5.0)
 problem.solve()
-# problem.printErrorRangeGraph("NewtonMethod2.png")
+problem.printErrorRangeGraph("NewtonMethod2.png")
 x, ans = problem.getAnswer()
 print("問題２：" + "   最適解：" + str(x) + "   " + "最適値：" + str(ans))

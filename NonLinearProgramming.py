@@ -188,7 +188,7 @@ class SteepestDecentMethod(NonLinearMethod):
         while True:
             # 探索方向の決定
             self.s = -self.dif_func(self.x)
-            # ラインサーチ
+            # 次のxの値を取得
             self.nextX = self.getNextX()
 
             errorRange = math.fabs(np.linalg.norm(self.nextX - self.x))
@@ -201,11 +201,13 @@ class SteepestDecentMethod(NonLinearMethod):
                 break
 
     def getNextX(self):
+        # ラインサーチ（2次近似法）を用いる
         x1 = self.x + self.dx * self.s
         x2 = self.x + 2.0 * self.dx * self.s
         p = (self.function(x2) - 2.0 * self.function(x1) + self.function(self.x)) / (2 * self.dx ** 2)
         q = (-self.function(x2) + 4.0 * self.function(x1) - 3 * self.function(self.x)) / (2 * self.dx)
         alpha = -q / (2.0 * p)
+
         nextX = self.x + alpha * self.s
         return nextX
 
@@ -222,7 +224,9 @@ class FletcherReeves(NonLinearMethod):
     def __init__(self, function, dif_func, x0):
         super().__init__(function)
         self.dif_func = dif_func
+        # 初期値
         self.x = x0
+        # 初期探索方向
         self.s = -self.dif_func(self.x)
         self.dx = 0.001
 
@@ -247,12 +251,14 @@ class FletcherReeves(NonLinearMethod):
         p = (self.function(x2) - 2.0 * self.function(x1) + self.function(self.x)) / (2 * self.dx ** 2)
         q = (-self.function(x2) + 4.0 * self.function(x1) - 3 * self.function(self.x)) / (2 * self.dx)
         alpha = -q / (2.0 * p)
+
         nextX = self.x + alpha * self.s
         return nextX
 
     # 次のsを定める
     def setNextS(self):
         self.s = -self.dif_func(self.nextX) + self.s * np.dot(self.dif_func(self.nextX),self.dif_func(self.nextX)) / np.dot(self.dif_func(self.x),self.dif_func(self.x))
+
 
     def getAnswer(self):
         optX = self.nextX
@@ -268,28 +274,48 @@ class BFGS(NonLinearMethod):
         super().__init__(function)
         self.dif_func = dif_func
         self.x = x0
-        # ヘッセ行列
+        self.dx = 0.001
+        # ヘッセ行列の初期値として単位行列を代入
         self.H = np.matrix(np.identity(self.x.size))
 
     def solve(self):
         while True:
-            s = np.array(-np.linalg.inv(self.H).dot(self.dif_func(self.x)))[0]
+            # 探索方向を決定
+            # s = -np.array(np.matrix(np.linalg.inv(self.H)) * np.matrix(self.dif_func(self.x)).T).T[0]
+            s = - np.matrix(np.linalg.inv(self.H)) * np.matrix(self.dif_func(self.x)).T
+            # print(s)
+            # 次のxを取得
             self.nextX = self.getNextX(s)
+
             errorRange = math.fabs(np.linalg.norm(self.nextX - self.x))
             self.errorRanges.append(errorRange)
 
             # 収束したかどうかの判定
             if errorRange > self.errorRangeLimit:
                 # ヘッセ行列の近似
-                y = self.dif_func(self.nextX) - self.dif_func(self.x)
-                self.H = self.H - np.dot(np.dot(np.array(np.dot(self.H, s))[0][:,np.newaxis],np.matrix(s)),self.H.T) / np.dot(np.array(np.dot(s,self.H))[0], s) + np.dot(y[:,np.newaxis],np.matrix(y)) / np.dot(s, y[:,np.newaxis])
+                y = np.matrix(self.dif_func(self.nextX) - self.dif_func(self.x)).T
+                # 第１項
+                one_c = np.matrix(self.H * s * s.T * self.H.T)
+                one_m = s.T * self.H * s
+                # 第２項
+                two_c = y * y.T
+                two_m = s.T * y
+                self.H = self.H - one_c/one_m + two_c/two_m
 
                 self.x = self.nextX
             else:
                 break
 
+
     def getNextX(self, s):
-        nextX = self.x + s
+        # ラインサーチ
+        # x1 = self.x + self.dx * s
+        # x2 = self.x + 2.0 * self.dx * s
+        # p = (self.function(x2) - 2.0 * self.function(x1) + self.function(self.x)) / (2 * self.dx ** 2)
+        # q = (-self.function(x2) + 4.0 * self.function(x1) - 3 * self.function(self.x)) / (2 * self.dx)
+        # alpha = -q / (2.0 * p)
+
+        nextX = self.x + np.array(s.T)[0]
         return nextX
 
     def getAnswer(self):
