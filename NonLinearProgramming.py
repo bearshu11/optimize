@@ -39,12 +39,12 @@ class NonLinearMethod(metaclass=ABCMeta):
         npErrorRanges = np.array(self.errorRanges)
         return np.gradient(np.log(npErrorRanges))
 
-    # 収束するまで再起を用いて解を求める。
+    # 収束する解を求める。
     @abstractmethod
     def solve(self):
         pass
 
-    # 次の評価点を求める(solveの再起の時に使う)
+    # 次の評価点を求める
     @abstractmethod
     def getNextX(self):
         pass
@@ -178,11 +178,11 @@ class NewtonMethod(NonLinearMethod):
 # dif_func functionを1階微分したもの
 # x0 初期値
 class SteepestDecentMethod(NonLinearMethod):
-    def __init__(self, function, dif_func, x0):
+    def __init__(self, function, dif_func, x0, dx=0.001):
         super().__init__(function)
         self.dif_func = dif_func
         self.x = x0
-        self.dx = 0.001
+        self.dx = dx
 
     def solve(self):
         while True:
@@ -210,6 +210,28 @@ class SteepestDecentMethod(NonLinearMethod):
 
         nextX = self.x + alpha * self.s
         return nextX
+
+    def backtrack(self, alpha=0.5, beta=0.8):
+        while True:
+            self.dx = 1.0
+            while True:
+                next_x = self.x - self.dx * self.dif_func(self.x)
+                armijo_rule = self.function(next_x) - self.function(self.x) + alpha * self.dx * pow(np.linalg.norm(self.dif_func(self.x)), 2)
+                if armijo_rule <= 0:
+                    break
+                else:
+                    self.dx *= beta
+            self.nextX = next_x
+
+            errorRange = math.fabs(np.linalg.norm(self.nextX - self.x))
+            self.errorRanges.append(errorRange)
+
+            # 収束したかどうかの判定
+            if errorRange > self.errorRangeLimit:
+                self.x = self.nextX
+            else:
+                break
+
 
     def getAnswer(self):
         optX = self.nextX
