@@ -46,6 +46,7 @@ class SteepestDecentMethod(NonLinearMethod):
 
     def getAnswer(self, filename=""):
         if filename != "":
+            # グラフの描画
             plt.figure()
             plt.title("Back Tracking Line Search")
             plt.xlabel("x1")
@@ -58,17 +59,20 @@ class SteepestDecentMethod(NonLinearMethod):
         optA = self.function(optX)
         return optX, optA
 
+# 問題として与えられた関数
 def f(x):
     return 10.0 * pow(x[0], 2) + pow(x[1], 2)
 
+# 与えられた関数の１階微分
 def dif_f(x):
     return np.array([20.0 * x[0], 2 * x[1]])
 
-x0 = np.array([1.0,5.0])
+if __name__ == "__main__":
+    # 初期値
+    x0 = np.array([1.0,5.0])
 
-
-method = SteepestDecentMethod(f,dif_f,x0)
-method.backtrack()
-x,a = method.getAnswer(filename="./backtrack.png")
-print("最適解: ", x)
-print("最適値: ", a)
+    method = SteepestDecentMethod(f,dif_f,x0)
+    method.backtrack()
+    x,a = method.getAnswer(filename="./backtrack.png")
+    print("最適解: ", x)
+    print("最適値: ", a)
