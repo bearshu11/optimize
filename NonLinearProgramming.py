@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from utilmath import *
+# from utilmath import *
 from abc import ABCMeta, abstractmethod
 import matplotlib
 matplotlib.use('agg')
@@ -283,7 +283,6 @@ class BFGS(NonLinearMethod):
             # 探索方向を決定
             # s = -np.array(np.matrix(np.linalg.inv(self.H)) * np.matrix(self.dif_func(self.x)).T).T[0]
             s = - np.matrix(np.linalg.inv(self.H)) * np.matrix(self.dif_func(self.x)).T
-            # print(s)
             # 次のxを取得
             self.nextX = self.getNextX(s)
 

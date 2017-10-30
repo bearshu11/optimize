@@ -41,11 +41,8 @@ def f3(x):
 def dif_f3(x):
     return np.array([(2*(x[0]-1.0) + 40 * (x[0] ** 2 - x[1]) * x[0]), (20.0*(x[0] ** 2 - x[1]))])
 
-x0_1 = np.array([1,1,1,1])
-x0_2 = np.array([2,2])
-
-# func_array = [(f1,dif_f1),(f2,dif_f2),(f3,dif_f3)]s
-# for i in range(len(func_array))
+x0_1 = np.array([2,2,2,2])
+x0_2 = np.array([1.5,1.5])
 
 print("***(1)***")
 print("***再急降下法***")
